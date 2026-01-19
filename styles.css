@@ -1,0 +1,27 @@
+body {
+  font-family: Arial;
+  background: #f6f7f9;
+  padding: 20px;
+}
+
+.card {
+  background: white;
+  padding: 16px;
+  margin-bottom: 16px;
+  border-radius: 6px;
+}
+
+.hidden {
+  display: none;
+}
+
+.flags span {
+  padding: 6px 10px;
+  margin: 4px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.flag-red { background: #ffe5e5; }
+.flag-yellow { background: #fff3cd; }
+.flag-green { background: #e6fffa; }
