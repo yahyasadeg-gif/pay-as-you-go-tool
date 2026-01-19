@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Pay As You Go – Call Tool</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<h1>Pay As You Go – Call Assistant</h1>
+
+<div class="card">
+  <label>Store ID</label>
+  <input type="text" id="storeIdInput">
+  <button onclick="loadStore()">Load Store</button>
+</div>
+
+<div id="storeSnapshot" class="card hidden"></div>
+<div id="flags" class="flags"></div>
+<form id="callForm" class="card hidden"></form>
+
+<button id="submitBtn" class="hidden">Submit Call</button>
+
+<script src="logic/rules.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
