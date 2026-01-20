@@ -84,3 +84,12 @@ textarea {
   font-weight: bold;
   margin-bottom: 10px;
 }
+.snapshot-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.snapshot-col p {
+  margin-bottom: 10px;
+}
