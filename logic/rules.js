@@ -1,68 +1,56 @@
-function generateFlags(store) {
-  const flagsDiv = document.getElementById("flags");
-  flagsDiv.innerHTML = "";
+function getFlags(store) {
+  const flags = [];
 
-  if (store.avgOnline < 5 && store.offlineOrders > 50) {
-    addFlag("Low online, strong offline", "red");
-  }
-
-  if (store.googleReviews > 100) {
-    addFlag("Strong Google presence", "green");
-  }
-
-  if (store.gpinStatus === "Unverified") {
-    addFlag("Unverified Google Pin", "yellow");
-  }
-}
-
-function addFlag(text, color) {
-  const span = document.createElement("span");
-  span.className = `flag-${color}`;
-  span.innerText = text;
-  document.getElementById("flags").appendChild(span);
-}
-
-function generateQuestions(store) {
-  const form = document.getElementById("callForm");
-  form.classList.remove("hidden");
-  form.innerHTML = "";
-
-  addQuestion(form, "How busy is the business overall?", ["Very busy", "Steady", "Quiet", "Very quiet"]);
-  addQuestion(form, "Total orders per day (approx)?", "number");
-
-  if (store.systemType === "EPOS") {
-    addQuestion(form, "Are walk-ins going through EPOS?", ["Yes", "Some", "No"]);
-  } else {
-    addQuestion(form, "How do you take walk-in orders?", ["Paper", "Memory", "Other"]);
-  }
-
-  if (store.gpinStatus === "Unverified") {
-    addQuestion(form, "Are you aware Google pin is unverified?", ["Yes", "No"]);
-  }
-
-  addQuestion(form, "If you could change one thing about online ordering, what would it be?", "text");
-
-  document.getElementById("submitBtn").classList.remove("hidden");
-}
-
-function addQuestion(form, label, options) {
-  const div = document.createElement("div");
-  div.innerHTML = `<label>${label}</label>`;
-
-  if (Array.isArray(options)) {
-    const select = document.createElement("select");
-    options.forEach(o => {
-      const opt = document.createElement("option");
-      opt.value = o;
-      opt.text = o;
-      select.appendChild(opt);
+  if (store["Gpin Status"] === "Unverified") {
+    flags.push({
+      field: "Gpin Status",
+      type: "green",
+      text: "GO GET THE GOOGLE PIN"
     });
-    div.appendChild(select);
-  } else {
-    const input = document.createElement("input");
-    input.type = options;
-    div.appendChild(input);
   }
 
-  form.appendChild(div);
+  if (parseFloat(store["Google Rating"]) < 4) {
+    flags.push({
+      field: "Google Rating",
+      type: "red",
+      text: "Low rating may reduce online conversion"
+    });
+  }
+
+  if (getCompetitors(store).length > 0) {
+    flags.push({
+      field: "Competitors",
+      type: "red",
+      text: "Client already paying another provider"
+    });
+  }
+
+  if (
+    parseInt(store["Offline Online"] || 0) > 30 &&
+    parseInt(store["Avverage Online"] || 0) < 10
+  ) {
+    flags.push({
+      field: "Offline Online",
+      type: "green",
+      text: "Offline demand exists — online can be grown"
+    });
+  }
+
+  return flags;
+}
+
+function getCompetitors(store) {
+  const raw = [
+    store["Competitor Name"],
+    store["Other POS Providers"],
+    store["Others"]
+  ];
+
+  return raw
+    .flatMap(v => v ? v.split(",") : [])
+    .map(v => v.trim())
+    .filter(v =>
+      v &&
+      !["none", "others", "none visible"].includes(v.toLowerCase())
+    );
 }
