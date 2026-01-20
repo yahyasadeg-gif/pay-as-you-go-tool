@@ -19,10 +19,16 @@ Papa.parse("data/stores.csv", {
 // LOAD STORE BY ID
 // ================================
 function loadStore() {
+  if (!stores.length) {
+    alert("Data still loading, please try again in a second.");
+    return;
+  }
+
   const id = document.getElementById("storeIdInput").value.trim();
-const store = stores.find(
-  s => String(s["Store ID"]).trim() === id
-);
+
+  const store = stores.find(
+    s => String(s["Store ID"]).trim() === id
+  );
 
   if (!store) {
     alert("Store not found");
