@@ -1,17 +1,14 @@
 let stores = [];
 
-fetch("data/stores.csv")
-  .then(res => res.text())
-  .then(text => {
-    const rows = text.split("\n").map(r => r.split(","));
-    const headers = rows.shift();
+Papa.parse("data/stores.csv", {
+  download: true,
+  header: true,
+  skipEmptyLines: true,
+  complete: function(results) {
+    stores = results.data;
+  }
+});
 
-    stores = rows.map(r => {
-      const obj = {};
-      headers.forEach((h, i) => obj[h.trim()] = r[i]?.trim());
-      return obj;
-    });
-  });
 
 function loadStore() {
   const id = document.getElementById("storeIdInput").value.trim();
