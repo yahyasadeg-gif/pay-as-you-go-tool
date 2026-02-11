@@ -1,17 +1,27 @@
+// ================================
+// GLOBAL DATA
+// ================================
 let stores = [];
 let currentStore = null;
 
+
+// ================================
 // LOAD CSV
+// ================================
 Papa.parse("data/stores.csv", {
   download: true,
   header: true,
   skipEmptyLines: true,
   complete: function(results) {
     stores = results.data;
+    console.log("Stores loaded:", stores.length);
   }
 });
 
+
+// ================================
 // LOAD STORE
+// ================================
 function loadStore() {
 
   if (!stores.length) {
@@ -36,7 +46,11 @@ function loadStore() {
   renderQuestions(store);
 }
 
+
+
+// ================================
 // SNAPSHOT
+// ================================
 function renderSnapshot(store) {
 
   const snap = document.getElementById("snapshot");
@@ -85,14 +99,18 @@ function renderSnapshot(store) {
   `;
 }
 
+
+
+// ================================
 // QUESTIONS
+// ================================
 function renderQuestions(store) {
 
   const form = document.getElementById("callForm");
   form.classList.remove("hidden");
   form.innerHTML = "";
 
-  // GROUP A
+  // -------- GROUP A ----------
   addSection(form, "Business Volume");
 
   addRadio(form,
@@ -105,7 +123,8 @@ function renderQuestions(store) {
     ["0–10", "11–30", "30+"]
   );
 
-  // GROUP B
+
+  // -------- GROUP B ----------
   addSection(form, "Online Sources");
 
   addCheckbox(form,
@@ -117,6 +136,7 @@ function renderQuestions(store) {
     "Are you using another online ordering or POS provider besides Foodhub?",
     ["Yes", "No"]
   );
+
 
   const competitors = getPosCompetitors(store);
 
@@ -136,7 +156,8 @@ function renderQuestions(store) {
     addText(form, "Are you receiving any special deal or incentive from them?");
   }
 
-  // GROUP C
+
+  // -------- GROUP C ----------
   addSection(form, "Offline Operations");
 
   addRadio(form,
@@ -148,6 +169,7 @@ function renderQuestions(store) {
       "Pen & paper"
     ]
   );
+
 
   if (
     store["System Type"] === "EPOS" &&
@@ -165,7 +187,8 @@ function renderQuestions(store) {
     );
   }
 
-  // GROUP D
+
+  // -------- GROUP D ----------
   addSection(form, "Foodhub Experience");
 
   addRadio(form,
@@ -174,9 +197,76 @@ function renderQuestions(store) {
   );
 
   addText(form, "Could you briefly describe the issue?");
+
+
+  // ⭐ SHOW SUBMIT BUTTON
+  document.getElementById("submitBtn").classList.remove("hidden");
 }
 
+
+
+// ================================
+// SUBMIT TO GOOGLE SHEET
+// ================================
+function submitCall() {
+
+  if (!currentStore) {
+    alert("Load a store first.");
+    return;
+  }
+
+  const selected = q =>
+    document.querySelector(`input[name="${q}"]:checked`)?.parentElement.textContent.trim() || "";
+
+  const checkboxes = q =>
+    Array.from(document.querySelectorAll(`input[name="${q}"]:checked`))
+      .map(el => el.value)
+      .join(", ");
+
+  const textAreas = document.querySelectorAll("textarea");
+
+  const payload = {
+
+    storeId: currentStore["Store ID"],
+    systemType: currentStore["System Type"],
+    subscribedTech: currentStore["Subscribed Tech"],
+    foodhubRental: currentStore["Payemnt Info [ System Rentals ] [ FoodHub ]"],
+    datmanRental: currentStore["Payemnt Info [ System Rentals ] [ Datman ]"],
+    googlePin: currentStore["Gpin Status"],
+    googleOwner: currentStore["Competitor Name"] || "Unknown",
+    posCompetitors: getPosCompetitors(currentStore).join(", "),
+    avgOnline: currentStore["Avverage Online"],
+    offlineOrders: currentStore["Offline Online"],
+
+    offlinePerDay: selected("How many offline orders do you typically handle per day?"),
+    onlinePerWeek: selected("How many online orders do you receive per week across all platforms?"),
+    marketplaces: checkboxes("Which delivery marketplaces are you currently using?"),
+    usingCompetitor: selected("Are you using another online ordering or POS provider besides Foodhub?"),
+    competitorName: selected("Which provider are you using?"),
+    competitorOrders: selected("Roughly how many orders per week come through that provider?"),
+    competitorFees: textAreas[0]?.value || "",
+    competitorDeal: textAreas[1]?.value || "",
+    offlineMethod: selected("How are walk-in and phone orders currently processed?"),
+    eposWhyNotUsed: selected("We can see Foodhub EPOS is installed — could you share why it isn’t being used for offline orders?"),
+    foodhubIssues: selected("Are you experiencing any issues or limitations with the Foodhub system?"),
+    issueDetails: textAreas[textAreas.length-1]?.value || ""
+  };
+
+
+  // 🔴 PASTE YOUR APPS SCRIPT URL HERE
+  fetch("PASTE_YOUR_WEB_APP_URL_HERE", {
+    method: "POST",
+    body: JSON.stringify(payload)
+  });
+
+  alert("Call saved successfully ✅");
+}
+
+
+
+// ================================
 // UI HELPERS
+// ================================
 function addSection(form, title) {
   const h = document.createElement("div");
   h.className = "section-title";
