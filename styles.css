@@ -89,6 +89,20 @@ textarea {
   grid-template-columns: 1fr 1fr;
   gap: 24px;
 }
+.snapshot-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.snapshot-col p {
+  margin-bottom: 10px;
+}
+
+textarea {
+  min-height: 70px;
+}
+
 
 .snapshot-col p {
   margin-bottom: 10px;
