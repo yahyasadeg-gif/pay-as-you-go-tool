@@ -1,4 +1,3 @@
-// ---- POS COMPETITORS ONLY (NOT DELIVERY PLATFORMS) ----
 function getPosCompetitors(store) {
   const raw = [
     store["Other POS Providers"],
@@ -14,11 +13,9 @@ function getPosCompetitors(store) {
     );
 }
 
-// ---- FLAGS ENGINE ----
 function getFlags(store) {
   const flags = [];
 
-  // 🟢 Google Pin Opportunity
   if (store["Gpin Status"] === "Unverified") {
     flags.push({
       field: "Gpin Status",
@@ -27,11 +24,8 @@ function getFlags(store) {
     });
   }
 
-  // 🟢 No subscribed tech (upsell opportunity)
-  if (
-    !store["Subscribed Tech"] ||
-    store["Subscribed Tech"].toLowerCase() === "none"
-  ) {
+  if (!store["Subscribed Tech"] ||
+      store["Subscribed Tech"].toLowerCase() === "none") {
     flags.push({
       field: "Subscribed Tech",
       type: "green",
@@ -39,7 +33,6 @@ function getFlags(store) {
     });
   }
 
-  // 🔴 Low Google rating
   if (parseFloat(store["Google Rating"]) < 4) {
     flags.push({
       field: "Google Rating",
@@ -48,7 +41,6 @@ function getFlags(store) {
     });
   }
 
-  // 🔴 POS competitor detected
   if (getPosCompetitors(store).length > 0) {
     flags.push({
       field: "POS Competitors",
@@ -57,7 +49,6 @@ function getFlags(store) {
     });
   }
 
-  // 🔴 EPOS installed but not used
   if (
     store["System Type"] === "EPOS" &&
     parseInt(store["Offline Online"] || 0) === 0
@@ -69,7 +60,6 @@ function getFlags(store) {
     });
   }
 
-  // 🟢 High offline, low online
   if (
     parseInt(store["Offline Online"] || 0) > 30 &&
     parseInt(store["Avverage Online"] || 0) < 10
