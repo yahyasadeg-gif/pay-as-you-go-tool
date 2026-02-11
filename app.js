@@ -1,3 +1,8 @@
+
+let currentStore = null;
+
+
+
 // ================================
 // GLOBAL DATA
 // ================================
@@ -18,7 +23,8 @@ Papa.parse("data/stores.csv", {
 // ================================
 // LOAD STORE BY ID
 // ================================
-function loadStore() {
+function loadStore(currentStore = store;
+) {
   if (!stores.length) {
     alert("Data still loading, please try again in a second.");
     return;
