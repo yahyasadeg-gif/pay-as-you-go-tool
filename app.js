@@ -254,7 +254,7 @@ function submitCall() {
 
 
   // 🔴 PASTE YOUR APPS SCRIPT URL HERE
-  fetch("PASTE_YOUR_WEB_APP_URL_HERE", {
+  fetch("https://script.google.com/macros/s/AKfycbyKRf7hE25n4Ha9bE3c1FEVDzyAnh24o5Z97tskuF-yf8n_MnffItj6zuhy2DNCrG_t/exec", {
     method: "POST",
     body: JSON.stringify(payload)
   });
