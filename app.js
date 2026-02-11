@@ -252,3 +252,44 @@ function addText(form, question) {
   d.innerHTML = `<p>${question}</p><textarea></textarea>`;
   form.appendChild(d);
 }
+function submitCall() {
+
+  const selected = q =>
+    document.querySelector(`input[name="${q}"]:checked`)?.nextSibling?.textContent.trim() || "";
+
+  const textAreas = document.querySelectorAll("textarea");
+
+  const payload = {
+    storeId: document.getElementById("storeIdInput").value.trim(),
+
+    systemType: currentStore["System Type"],
+    subscribedTech: currentStore["Subscribed Tech"],
+    foodhubRental: currentStore["Payemnt Info [ System Rentals ] [ FoodHub ]"],
+    datmanRental: currentStore["Payemnt Info [ System Rentals ] [ Datman ]"],
+    googlePin: currentStore["Gpin Status"],
+    googleOwner: currentStore["Competitor Name"] || "Unknown",
+    posCompetitors: getPosCompetitors(currentStore).join(", "),
+    avgOnline: currentStore["Avverage Online"],
+    offlineOrders: currentStore["Offline Online"],
+
+    offlinePerDay: selected("How many offline orders do you typically handle per day?"),
+    onlinePerWeek: selected("How many online orders do you receive per week across all platforms?"),
+    marketplaces: selected("Which delivery marketplaces are you currently using?"),
+    usingCompetitor: selected("Are you using another online ordering or POS provider besides Foodhub?"),
+    competitorName: selected("Which provider are you using?"),
+    competitorOrders: selected("Roughly how many orders per week come through that provider?"),
+    competitorFees: textAreas[0]?.value || "",
+    competitorDeal: textAreas[1]?.value || "",
+    offlineMethod: selected("How are walk-in and phone orders currently processed?"),
+    eposWhyNotUsed: selected("We can see Foodhub EPOS is installed — could you share why it isn’t being used for offline orders?"),
+    foodhubIssues: selected("Are you experiencing any issues or limitations with the Foodhub system?"),
+    issueDetails: textAreas[textAreas.length-1]?.value || ""
+  };
+
+  fetch("PASTE_WEB_APP_URL_HERE", {
+    method: "POST",
+    body: JSON.stringify(payload)
+  });
+
+  alert("Call saved successfully ✅");
+}
