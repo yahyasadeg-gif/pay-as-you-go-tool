@@ -3,7 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <title>Pay As You Go – Call Assistant</title>
+
   <link rel="stylesheet" href="styles.css">
+
+  <!-- PapaParse MUST load before app.js -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 </head>
 <body>
 
@@ -24,12 +28,12 @@
   <!-- QUESTIONS -->
   <form id="callForm" class="card hidden"></form>
 
-  <button id="submitBtn" class="btn hidden">Submit Call</button>
+  <button id="submitBtn" class="btn hidden" onclick="submitCall()">Submit Call</button>
 
 </div>
 
 <script src="logic/rules.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 <script src="app.js"></script>
+
 </body>
 </html>
