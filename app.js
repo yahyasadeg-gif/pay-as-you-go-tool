@@ -1,32 +1,21 @@
-
+let stores = [];
 let currentStore = null;
 
-
-
-// ================================
-// GLOBAL DATA
-// ================================
-let stores = [];
-
-// ================================
-// LOAD CSV (SAFE PARSING)
-// ================================
+// LOAD CSV
 Papa.parse("data/stores.csv", {
   download: true,
   header: true,
   skipEmptyLines: true,
-  complete: function (results) {
+  complete: function(results) {
     stores = results.data;
   }
 });
 
-// ================================
-// LOAD STORE BY ID
-// ================================
-function loadStore(currentStore = store;
-) {
+// LOAD STORE
+function loadStore() {
+
   if (!stores.length) {
-    alert("Data still loading, please try again in a second.");
+    alert("Data still loading...");
     return;
   }
 
@@ -41,14 +30,15 @@ function loadStore(currentStore = store;
     return;
   }
 
+  currentStore = store;
+
   renderSnapshot(store);
   renderQuestions(store);
 }
 
-// ================================
-// SNAPSHOT RENDER
-// ================================
+// SNAPSHOT
 function renderSnapshot(store) {
+
   const snap = document.getElementById("snapshot");
   snap.classList.remove("hidden");
 
@@ -61,20 +51,13 @@ function renderSnapshot(store) {
       : "";
   };
 
-  // POS competitors ONLY (not delivery platforms)
   const posCompetitors = getPosCompetitors(store);
-  const posCompetitorsText =
+  const competitorsText =
     posCompetitors.length > 0 ? posCompetitors.join(" / ") : "None";
 
-  // Google page ownership logic
-  let googleOwner = "Unknown";
-  if (store["Competitor Name"]) {
-    googleOwner = store["Competitor Name"];
-  }
-
-  const showGoogleOwner =
+  const googleOwner =
     store["Gpin Status"] === "Unverified"
-      ? `<small><i>Managed by: ${googleOwner}</i></small>`
+      ? `<small><i>Managed by: ${store["Competitor Name"] || "Unknown"}</i></small>`
       : "";
 
   snap.innerHTML = `
@@ -82,155 +65,118 @@ function renderSnapshot(store) {
 
     <div class="snapshot-grid">
 
-      <!-- LEFT COLUMN -->
       <div class="snapshot-col">
         <p><b>System:</b> ${store["System Type"]}</p>
-        <p>
-          <b>Subscribed Tech:</b> ${store["Subscribed Tech"]}
-          ${flagFor("Subscribed Tech")}
-        </p>
+        <p><b>Subscribed Tech:</b> ${store["Subscribed Tech"]} ${flagFor("Subscribed Tech")}</p>
         <p><b>Mandate:</b> ${store["Mandate"]}</p>
-        <p>
-          <b>Foodhub Weekly Rental:</b>
-          £${store["Payemnt Info [ System Rentals ] [ FoodHub ]"]}
-        </p>
-        <p>
-          <b>Datman Weekly Rental:</b>
-          £${store["Payemnt Info [ System Rentals ] [ Datman ]"]}
-        </p>
+        <p><b>Foodhub Weekly Rental:</b> £${store["Payemnt Info [ System Rentals ] [ FoodHub ]"]}</p>
+        <p><b>Datman Weekly Rental:</b> £${store["Payemnt Info [ System Rentals ] [ Datman ]"]}</p>
       </div>
 
-      <!-- RIGHT COLUMN -->
       <div class="snapshot-col">
-        <p>
-          <b>Google Pin:</b> ${store["Gpin Status"]}
-          ${flagFor("Gpin Status")} <br>
-          ${showGoogleOwner}
-        </p>
-
-        <p>
-          <b>Rating:</b>
-          ${store["Google Rating"]}
-          (${store["Number of Google Reviews"]})
-          ${flagFor("Google Rating")}
-        </p>
-
-        <p>
-          <b>POS Competitors:</b> ${posCompetitorsText}
-          ${flagFor("POS Competitors")}
-        </p>
-
+        <p><b>Google Pin:</b> ${store["Gpin Status"]} ${flagFor("Gpin Status")} <br>${googleOwner}</p>
+        <p><b>Rating:</b> ${store["Google Rating"]} (${store["Number of Google Reviews"]}) ${flagFor("Google Rating")}</p>
+        <p><b>POS Competitors:</b> ${competitorsText} ${flagFor("POS Competitors")}</p>
         <p><b>Avg Online Orders:</b> ${store["Avverage Online"]}</p>
-
-        <p>
-          <b>Offline Orders:</b> ${store["Offline Online"]}
-          ${flagFor("Offline Online")}
-        </p>
+        <p><b>Offline Orders:</b> ${store["Offline Online"]} ${flagFor("Offline Online")}</p>
       </div>
 
     </div>
   `;
 }
 
-// ================================
-// QUESTIONS RENDER (ADAPTIVE)
-// ================================
+// QUESTIONS
 function renderQuestions(store) {
+
   const form = document.getElementById("callForm");
   form.classList.remove("hidden");
   form.innerHTML = "";
 
-  // ---- GROUP A: BUSINESS REALITY ----
-  addSection(form, "Business Reality");
-  addRadio(form, "How busy is the business overall?", [
-    "Very busy",
-    "Steady",
-    "Quiet"
-  ]);
+  // GROUP A
+  addSection(form, "Business Volume");
 
-  // ---- GROUP B: ORDER VOLUME ----
-  addSection(form, "Order Volume");
-  addRadio(form, "Total orders per day (all channels)?", [
-    "0–20",
-    "21–50",
-    "50+"
-  ]);
+  addRadio(form,
+    "How many offline orders do you typically handle per day?",
+    ["0–20", "21–50", "50+"]
+  );
 
-  addRadio(form, "Online orders per week (all platforms)?", [
-    "0–10",
-    "11–30",
-    "30+"
-  ]);
+  addRadio(form,
+    "How many online orders do you receive per week across all platforms?",
+    ["0–10", "11–30", "30+"]
+  );
 
-  // ---- GROUP C: COMPETITORS & COSTS ----
-  const posCompetitors = getPosCompetitors(store);
+  // GROUP B
+  addSection(form, "Online Sources");
 
-  if (posCompetitors.length > 0) {
-    addSection(form, "Competitors & Costs");
+  addCheckbox(form,
+    "Which delivery marketplaces are you currently using?",
+    ["Just Eat", "Uber Eats", "Deliveroo", "None"]
+  );
 
-    addRadio(form, "Which platform brings the most online orders?", [
-      "Foodhub",
-      "Just Eat",
-      "Uber Eats",
-      "Deliveroo",
-      ...posCompetitors
-    ]);
+  addRadio(form,
+    "Are you using another online ordering or POS provider besides Foodhub?",
+    ["Yes", "No"]
+  );
 
-    addRadio(form, "Roughly how many orders per week from that platform?", [
-      "0–10",
-      "11–30",
-      "30+"
-    ]);
+  const competitors = getPosCompetitors(store);
+
+  if (competitors.length > 0) {
+
+    addDropdown(form,
+      "Which provider are you using?",
+      competitors
+    );
+
+    addRadio(form,
+      "Roughly how many orders per week come through that provider?",
+      ["0–10", "11–30", "30+"]
+    );
 
     addText(form, "What commission or transaction fees do they take?");
-    addText(form, "Any special deal or agreement with them? (optional)");
+    addText(form, "Are you receiving any special deal or incentive from them?");
   }
 
-  // ---- GROUP D: OFFLINE OPERATIONS ----
+  // GROUP C
   addSection(form, "Offline Operations");
 
-  addRadio(form, "How do you take walk-in and phone orders?", [
-    "Foodhub EPOS only",
-    "Foodhub EPOS + another company",
-    "Another company EPOS only",
-    "Pen & paper"
-  ]);
+  addRadio(form,
+    "How are walk-in and phone orders currently processed?",
+    [
+      "Foodhub EPOS only",
+      "Foodhub EPOS + another provider",
+      "Another provider only",
+      "Pen & paper"
+    ]
+  );
 
-  // EPOS installed but not used
   if (
     store["System Type"] === "EPOS" &&
     parseInt(store["Offline Online"] || 0) === 0
   ) {
-    addRadio(
-      form,
-      "You have Foodhub EPOS — why isn’t it being used for offline orders?",
+    addRadio(form,
+      "We can see Foodhub EPOS is installed — could you share why it isn’t being used for offline orders?",
       [
-        "Staff don’t use it",
-        "Owner prefers another system",
-        "Setup was never completed",
-        "Didn’t know it should be used",
+        "Staff not trained",
+        "Prefer another system",
+        "Setup incomplete",
+        "Didn’t realise it should be used",
         "Other"
       ]
     );
   }
 
-  // ---- GROUP E: FOODHUB ISSUES ----
-  addSection(form, "Foodhub Issues");
+  // GROUP D
+  addSection(form, "Foodhub Experience");
 
-  addRadio(form, "Do you face any issues with Foodhub systems?", [
-    "No issues",
-    "Minor issues",
-    "Major issues"
-  ]);
+  addRadio(form,
+    "Are you experiencing any issues or limitations with the Foodhub system?",
+    ["No issues", "Minor limitations", "Major issues"]
+  );
 
-  addText(form, "If yes, what kind of issues?");
-
-  document.getElementById("submitBtn").classList.remove("hidden");
+  addText(form, "Could you briefly describe the issue?");
 }
 
-// ================================
-// HELPERS (UI)
-// ================================
+// UI HELPERS
 function addSection(form, title) {
   const h = document.createElement("div");
   h.className = "section-title";
@@ -241,14 +187,38 @@ function addSection(form, title) {
 function addRadio(form, question, options) {
   const d = document.createElement("div");
   d.className = "question";
-  d.innerHTML =
-    `<p>${question}</p>` +
-    options
-      .map(
-        opt =>
-          `<label><input type="radio" name="${question}"> ${opt}</label><br>`
-      )
-      .join("");
+
+  d.innerHTML = `<p>${question}</p>` +
+    options.map(o =>
+      `<label><input type="radio" name="${question}"> ${o}</label><br>`
+    ).join("");
+
+  form.appendChild(d);
+}
+
+function addCheckbox(form, question, options) {
+  const d = document.createElement("div");
+  d.className = "question";
+
+  d.innerHTML = `<p>${question}</p>` +
+    options.map(o =>
+      `<label><input type="checkbox" name="${question}" value="${o}"> ${o}</label><br>`
+    ).join("");
+
+  form.appendChild(d);
+}
+
+function addDropdown(form, question, options) {
+  const d = document.createElement("div");
+  d.className = "question";
+
+  d.innerHTML = `
+    <p>${question}</p>
+    <select name="${question}">
+      ${options.map(o => `<option>${o}</option>`).join("")}
+    </select>
+  `;
+
   form.appendChild(d);
 }
 
@@ -257,45 +227,4 @@ function addText(form, question) {
   d.className = "question";
   d.innerHTML = `<p>${question}</p><textarea></textarea>`;
   form.appendChild(d);
-}
-function submitCall() {
-
-  const selected = q =>
-    document.querySelector(`input[name="${q}"]:checked`)?.nextSibling?.textContent.trim() || "";
-
-  const textAreas = document.querySelectorAll("textarea");
-
-  const payload = {
-    storeId: document.getElementById("storeIdInput").value.trim(),
-
-    systemType: currentStore["System Type"],
-    subscribedTech: currentStore["Subscribed Tech"],
-    foodhubRental: currentStore["Payemnt Info [ System Rentals ] [ FoodHub ]"],
-    datmanRental: currentStore["Payemnt Info [ System Rentals ] [ Datman ]"],
-    googlePin: currentStore["Gpin Status"],
-    googleOwner: currentStore["Competitor Name"] || "Unknown",
-    posCompetitors: getPosCompetitors(currentStore).join(", "),
-    avgOnline: currentStore["Avverage Online"],
-    offlineOrders: currentStore["Offline Online"],
-
-    offlinePerDay: selected("How many offline orders do you typically handle per day?"),
-    onlinePerWeek: selected("How many online orders do you receive per week across all platforms?"),
-    marketplaces: selected("Which delivery marketplaces are you currently using?"),
-    usingCompetitor: selected("Are you using another online ordering or POS provider besides Foodhub?"),
-    competitorName: selected("Which provider are you using?"),
-    competitorOrders: selected("Roughly how many orders per week come through that provider?"),
-    competitorFees: textAreas[0]?.value || "",
-    competitorDeal: textAreas[1]?.value || "",
-    offlineMethod: selected("How are walk-in and phone orders currently processed?"),
-    eposWhyNotUsed: selected("We can see Foodhub EPOS is installed — could you share why it isn’t being used for offline orders?"),
-    foodhubIssues: selected("Are you experiencing any issues or limitations with the Foodhub system?"),
-    issueDetails: textAreas[textAreas.length-1]?.value || ""
-  };
-
-  fetch("PASTE_WEB_APP_URL_HERE", {
-    method: "POST",
-    body: JSON.stringify(payload)
-  });
-
-  alert("Call saved successfully ✅");
 }
