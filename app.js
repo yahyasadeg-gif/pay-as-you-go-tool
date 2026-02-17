@@ -109,6 +109,18 @@ function renderQuestions(store) {
   const form = document.getElementById("callForm");
   form.classList.remove("hidden");
   form.innerHTML = "";
+// -------- CALL OWNER ----------
+addSection(form, "Call Owner");
+
+addDropdown(form,
+  "Select your name",
+  [
+    "Kareem",
+    "Mansour",
+    "Ibrahim",
+    "Hossam"
+  ]
+);
 
   // -------- GROUP A ----------
   addSection(form, "Business Volume");
@@ -197,6 +209,62 @@ function renderQuestions(store) {
   );
 
   addText(form, "Could you briefly describe the issue?");
+// -------- CALL OUTCOME ----------
+addSection(form, "Call Outcome");
+
+addRadio(form,
+  "Did the client accept the Pay-As-You-Go deal?",
+  [
+    "Accepted",
+    "Wants time to consider",
+    "Rejected",
+    "Not offered"
+  ]
+);
+
+addRadio(form,
+  "Was any upsell attempted during the call?",
+  ["Yes", "No"]
+);
+
+// Upsell dropdown (hidden initially)
+const upsellWrapper = document.createElement("div");
+upsellWrapper.className = "question hidden";
+upsellWrapper.id = "upsellDetails";
+
+upsellWrapper.innerHTML = `
+<p>What product or service was upsold?</p>
+<select id="upsellSelect">
+  <option>EPOS</option>
+  <option>Foodhub App</option>
+  <option>Card Machine / PDQ</option>
+  <option>Kiosk</option>
+  <option>Website Upgrade</option>
+  <option>SMS Marketing</option>
+  <option>Loyalty</option>
+  <option>Other</option>
+</select>
+<textarea id="upsellOther" placeholder="If Other, specify..." style="display:none;"></textarea>
+`;
+
+form.appendChild(upsellWrapper);
+
+
+// SHOW / HIDE UPSSELL
+document.querySelectorAll('input[name="Was any upsell attempted during the call?"]')
+.forEach(radio => {
+  radio.addEventListener("change", e => {
+    document.getElementById("upsellDetails")
+      .classList.toggle("hidden", e.target.value !== "Yes");
+  });
+});
+
+document.addEventListener("change", function(e){
+  if(e.target.id === "upsellSelect"){
+    document.getElementById("upsellOther")
+      .style.display = e.target.value === "Other" ? "block" : "none";
+  }
+});
 
 
   // ⭐ SHOW SUBMIT BUTTON
@@ -211,6 +279,13 @@ function renderQuestions(store) {
 function submitCall() {
 
   if (!currentStore) {
+    const agentName = document.querySelector('select[name="Select your name"]')?.value;
+
+if (!agentName) {
+  alert("Please select your name before submitting.");
+  return;
+}
+
     alert("Load a store first.");
     return;
   }
@@ -250,6 +325,15 @@ function submitCall() {
     eposWhyNotUsed: selected("We can see Foodhub EPOS is installed — could you share why it isn’t being used for offline orders?"),
     foodhubIssues: selected("Are you experiencing any issues or limitations with the Foodhub system?"),
     issueDetails: textAreas[textAreas.length-1]?.value || ""
+
+agentName: agentName,
+dealStatus: selected("Did the client accept the Pay-As-You-Go deal?"),
+upsellAttempted: selected("Was any upsell attempted during the call?"),
+upsellProduct: document.getElementById("upsellSelect")?.value || "",
+upsellOther: document.getElementById("upsellOther")?.value || "",
+
+
+    
   };
 
 
