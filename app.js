@@ -109,18 +109,15 @@ function renderQuestions(store) {
   const form = document.getElementById("callForm");
   form.classList.remove("hidden");
   form.innerHTML = "";
-// -------- CALL OWNER ----------
-addSection(form, "Call Owner");
 
-addDropdown(form,
-  "Select your name",
-  [
-    "Kareem",
-    "Mansour",
-    "Ibrahim",
-    "Hossam"
-  ]
-);
+  // -------- CALL OWNER ----------
+  addSection(form, "Call Owner");
+
+  addDropdown(form,
+    "Select your name",
+    ["Kareem", "Mansour", "Ibrahim", "Hossam"]
+  );
+
 
   // -------- GROUP A ----------
   addSection(form, "Business Volume");
@@ -209,84 +206,84 @@ addDropdown(form,
   );
 
   addText(form, "Could you briefly describe the issue?");
-// -------- CALL OUTCOME ----------
-addSection(form, "Call Outcome");
-
-addRadio(form,
-  "Did the client accept the Pay-As-You-Go deal?",
-  [
-    "Accepted",
-    "Wants time to consider",
-    "Rejected",
-    "Not offered"
-  ]
-);
-
-addRadio(form,
-  "Was any upsell attempted during the call?",
-  ["Yes", "No"]
-);
-
-// Upsell dropdown (hidden initially)
-const upsellWrapper = document.createElement("div");
-upsellWrapper.className = "question hidden";
-upsellWrapper.id = "upsellDetails";
-
-upsellWrapper.innerHTML = `
-<p>What product or service was upsold?</p>
-<select id="upsellSelect">
-  <option>EPOS</option>
-  <option>Foodhub App</option>
-  <option>Card Machine / PDQ</option>
-  <option>Kiosk</option>
-  <option>Website Upgrade</option>
-  <option>SMS Marketing</option>
-  <option>Loyalty</option>
-  <option>Other</option>
-</select>
-<textarea id="upsellOther" placeholder="If Other, specify..." style="display:none;"></textarea>
-`;
-
-form.appendChild(upsellWrapper);
 
 
-// SHOW / HIDE UPSSELL
-document.querySelectorAll('input[name="Was any upsell attempted during the call?"]')
-.forEach(radio => {
-  radio.addEventListener("change", e => {
-    document.getElementById("upsellDetails")
-      .classList.toggle("hidden", e.target.value !== "Yes");
+  // -------- CALL OUTCOME ----------
+  addSection(form, "Call Outcome");
+
+  addRadio(form,
+    "Did the client accept the Pay-As-You-Go deal?",
+    [
+      "Accepted",
+      "Wants time to consider",
+      "Rejected",
+      "Not offered"
+    ]
+  );
+
+  addRadio(form,
+    "Was any upsell attempted during the call?",
+    ["Yes", "No"]
+  );
+
+
+  const upsellWrapper = document.createElement("div");
+  upsellWrapper.className = "question hidden";
+  upsellWrapper.id = "upsellDetails";
+
+  upsellWrapper.innerHTML = `
+  <p>What product or service was upsold?</p>
+  <select id="upsellSelect">
+    <option>EPOS</option>
+    <option>Foodhub App</option>
+    <option>Card Machine / PDQ</option>
+    <option>Kiosk</option>
+    <option>Website Upgrade</option>
+    <option>SMS Marketing</option>
+    <option>Loyalty</option>
+    <option>Other</option>
+  </select>
+  <textarea id="upsellOther" placeholder="If Other, specify..." style="display:none;"></textarea>
+  `;
+
+  form.appendChild(upsellWrapper);
+
+
+  document.querySelectorAll('input[name="Was any upsell attempted during the call?"]')
+  .forEach(radio => {
+    radio.addEventListener("change", e => {
+      document.getElementById("upsellDetails")
+        .classList.toggle("hidden", e.target.nextSibling.textContent.trim() !== "Yes");
+    });
   });
-});
 
-document.addEventListener("change", function(e){
-  if(e.target.id === "upsellSelect"){
-    document.getElementById("upsellOther")
-      .style.display = e.target.value === "Other" ? "block" : "none";
-  }
-});
+  document.addEventListener("change", function(e){
+    if(e.target.id === "upsellSelect"){
+      document.getElementById("upsellOther")
+        .style.display = e.target.value === "Other" ? "block" : "none";
+    }
+  });
 
 
-  // ⭐ SHOW SUBMIT BUTTON
   document.getElementById("submitBtn").classList.remove("hidden");
 }
 
 
 
 // ================================
-// SUBMIT TO GOOGLE SHEET
+// SUBMIT
 // ================================
 function submitCall() {
 
   if (!currentStore) {
-    const agentName = document.querySelector('select[name="Select your name"]')?.value;
-
-if (!agentName) {
-  alert("Please select your name before submitting.");
-  return;
-}
-
     alert("Load a store first.");
+    return;
+  }
+
+  const agentName = document.querySelector('select[name="Select your name"]')?.value;
+
+  if (!agentName) {
+    alert("Please select your name before submitting.");
     return;
   }
 
@@ -301,6 +298,8 @@ if (!agentName) {
   const textAreas = document.querySelectorAll("textarea");
 
   const payload = {
+
+    agentName: agentName,
 
     storeId: currentStore["Store ID"],
     systemType: currentStore["System Type"],
@@ -324,20 +323,15 @@ if (!agentName) {
     offlineMethod: selected("How are walk-in and phone orders currently processed?"),
     eposWhyNotUsed: selected("We can see Foodhub EPOS is installed — could you share why it isn’t being used for offline orders?"),
     foodhubIssues: selected("Are you experiencing any issues or limitations with the Foodhub system?"),
-    issueDetails: textAreas[textAreas.length-1]?.value || ""
+    issueDetails: textAreas[textAreas.length-1]?.value || "",
 
-agentName: agentName,
-dealStatus: selected("Did the client accept the Pay-As-You-Go deal?"),
-upsellAttempted: selected("Was any upsell attempted during the call?"),
-upsellProduct: document.getElementById("upsellSelect")?.value || "",
-upsellOther: document.getElementById("upsellOther")?.value || "",
-
-
-    
+    dealStatus: selected("Did the client accept the Pay-As-You-Go deal?"),
+    upsellAttempted: selected("Was any upsell attempted during the call?"),
+    upsellProduct: document.getElementById("upsellSelect")?.value || "",
+    upsellOther: document.getElementById("upsellOther")?.value || ""
   };
 
 
-  // 🔴 PASTE YOUR APPS SCRIPT URL HERE
   fetch("https://script.google.com/macros/s/AKfycbyKRf7hE25n4Ha9bE3c1FEVDzyAnh24o5Z97tskuF-yf8n_MnffItj6zuhy2DNCrG_t/exec", {
     method: "POST",
     body: JSON.stringify(payload)
@@ -389,6 +383,7 @@ function addDropdown(form, question, options) {
   d.innerHTML = `
     <p>${question}</p>
     <select name="${question}">
+      <option value="">-- Select --</option>
       ${options.map(o => `<option>${o}</option>`).join("")}
     </select>
   `;
