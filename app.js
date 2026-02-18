@@ -233,7 +233,7 @@ function submitCall() {
   };
 
 
-  fetch("PASTE_YOUR_REAL_SCRIPT_URL_HERE", {
+  fetch("https://script.google.com/macros/s/AKfycbzkL0NFo-AOIt6gfdCxip89gIgzUabJ0Ls19pSWR6UCLtJkhwVC1y9cCTTiu22YmaU3/exec", {
     method: "POST",
     body: JSON.stringify(payload)
   });
