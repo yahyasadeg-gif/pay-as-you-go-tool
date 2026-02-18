@@ -234,7 +234,7 @@ function submitCall() {
   };
 
 
-  fetch("https://script.google.com/macros/s/AKfycbzkL0NFo-AOIt6gfdCxip89gIgzUabJ0Ls19pSWR6UCLtJkhwVC1y9cCTTiu22YmaU3/exec", {
+  fetch("https://script.google.com/macros/s/AKfycbwTi9v9or44NnEiiv8ts8NjFLr81skm4VL9oL9SsJPNj_ZBv2QgyvCLYSX0EYetylWt/exec", {
     method: "POST",
     body: JSON.stringify(payload)
   });
