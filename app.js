@@ -207,6 +207,7 @@ function submitCall() {
     datmanRental: currentStore["Payemnt Info [ System Rentals ] [ Datman ]"] || "",
     googlePin: currentStore["Gpin Status"] || "",
     googleOwner: currentStore["Competitor Name"] || "",
+    posCompetitors: getPosCompetitors(currentStore)?.join(", ") || "",
     avgOnline: currentStore["Avverage Online"] || "",
     offlineOrders: currentStore["Offline Online"] || "",
 
