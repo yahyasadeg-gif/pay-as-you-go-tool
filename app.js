@@ -14,7 +14,6 @@ Papa.parse("data/stores.csv", {
   skipEmptyLines: true,
   complete: function(results) {
     stores = results.data;
-    console.log("Stores loaded:", stores.length);
   }
 });
 
@@ -56,45 +55,27 @@ function renderSnapshot(store) {
   const snap = document.getElementById("snapshot");
   snap.classList.remove("hidden");
 
-  const flags = getFlags(store);
-
-  const flagFor = field => {
-    const f = flags.find(x => x.field === field);
-    return f
-      ? `<span class="flag ${f.type}" title="${f.text}">●</span>`
-      : "";
-  };
-
   const posCompetitors = getPosCompetitors(store);
   const competitorsText =
     posCompetitors.length > 0 ? posCompetitors.join(" / ") : "None";
-
-  const googleOwner =
-    store["Gpin Status"] === "Unverified"
-      ? `<small><i>Managed by: ${store["Competitor Name"] || "Unknown"}</i></small>`
-      : "";
 
   snap.innerHTML = `
     <div class="section-title">Store Snapshot</div>
 
     <div class="snapshot-grid">
-
-      <div class="snapshot-col">
+      <div>
         <p><b>System:</b> ${store["System Type"]}</p>
-        <p><b>Subscribed Tech:</b> ${store["Subscribed Tech"]} ${flagFor("Subscribed Tech")}</p>
-        <p><b>Mandate:</b> ${store["Mandate"]}</p>
+        <p><b>Subscribed Tech:</b> ${store["Subscribed Tech"]}</p>
         <p><b>Foodhub Weekly Rental:</b> £${store["Payemnt Info [ System Rentals ] [ FoodHub ]"]}</p>
         <p><b>Datman Weekly Rental:</b> £${store["Payemnt Info [ System Rentals ] [ Datman ]"]}</p>
       </div>
 
-      <div class="snapshot-col">
-        <p><b>Google Pin:</b> ${store["Gpin Status"]} ${flagFor("Gpin Status")} <br>${googleOwner}</p>
-        <p><b>Rating:</b> ${store["Google Rating"]} (${store["Number of Google Reviews"]}) ${flagFor("Google Rating")}</p>
-        <p><b>POS Competitors:</b> ${competitorsText} ${flagFor("POS Competitors")}</p>
-        <p><b>Avg Online Orders:</b> ${store["Avverage Online"]}</p>
-        <p><b>Offline Orders:</b> ${store["Offline Online"]} ${flagFor("Offline Online")}</p>
+      <div>
+        <p><b>Google Pin:</b> ${store["Gpin Status"]}</p>
+        <p><b>POS Competitors:</b> ${competitorsText}</p>
+        <p><b>Avg Online:</b> ${store["Avverage Online"]}</p>
+        <p><b>Offline Orders:</b> ${store["Offline Online"]}</p>
       </div>
-
     </div>
   `;
 }
@@ -102,7 +83,7 @@ function renderSnapshot(store) {
 
 
 // ================================
-// QUESTIONS
+// QUESTIONS (NO CONDITIONS)
 // ================================
 function renderQuestions(store) {
 
@@ -110,159 +91,89 @@ function renderQuestions(store) {
   form.classList.remove("hidden");
   form.innerHTML = "";
 
-  // -------- CALL OWNER ----------
+  // CALL OWNER
   addSection(form, "Call Owner");
 
   addDropdown(form,
-    "Select your name",
-    ["Kareem", "Mansour", "Ibrahim", "Hossam"]
+    "Agent",
+    ["Kareem","Mansour","Ibrahim","Hossam"]
   );
 
 
-  // -------- GROUP A ----------
+  // BUSINESS
   addSection(form, "Business Volume");
 
   addRadio(form,
-    "How many offline orders do you typically handle per day?",
-    ["0–20", "21–50", "50+"]
+    "Offline orders per day",
+    ["0–20","21–50","50+"]
   );
 
   addRadio(form,
-    "How many online orders do you receive per week across all platforms?",
-    ["0–10", "11–30", "30+"]
+    "Online orders per week",
+    ["0–10","11–30","30+"]
   );
 
 
-  // -------- GROUP B ----------
+  // MARKETPLACES
   addSection(form, "Online Sources");
 
   addCheckbox(form,
-    "Which delivery marketplaces are you currently using?",
-    ["Just Eat", "Uber Eats", "Deliveroo", "None"]
+    "Delivery platforms",
+    ["Just Eat","Uber Eats","Deliveroo","None"]
   );
 
   addRadio(form,
-    "Are you using another online ordering or POS provider besides Foodhub?",
-    ["Yes", "No"]
+    "Using another POS?",
+    ["Yes","No"]
   );
 
-
-  const competitors = getPosCompetitors(store);
-
-  if (competitors.length > 0) {
-
-    addDropdown(form,
-      "Which provider are you using?",
-      competitors
-    );
-
-    addRadio(form,
-      "Roughly how many orders per week come through that provider?",
-      ["0–10", "11–30", "30+"]
-    );
-
-    addText(form, "What commission or transaction fees do they take?");
-    addText(form, "Are you receiving any special deal or incentive from them?");
-  }
+  addText(form,"Competitor name");
+  addText(form,"Competitor weekly orders");
+  addText(form,"Competitor fees");
+  addText(form,"Special deal");
 
 
-  // -------- GROUP C ----------
+  // OFFLINE OPS
   addSection(form, "Offline Operations");
 
   addRadio(form,
-    "How are walk-in and phone orders currently processed?",
+    "Offline order method",
     [
       "Foodhub EPOS only",
-      "Foodhub EPOS + another provider",
-      "Another provider only",
+      "Foodhub + other POS",
+      "Other POS only",
       "Pen & paper"
     ]
   );
 
-
-  if (
-    store["System Type"] === "EPOS" &&
-    parseInt(store["Offline Online"] || 0) === 0
-  ) {
-    addRadio(form,
-      "We can see Foodhub EPOS is installed — could you share why it isn’t being used for offline orders?",
-      [
-        "Staff not trained",
-        "Prefer another system",
-        "Setup incomplete",
-        "Didn’t realise it should be used",
-        "Other"
-      ]
-    );
-  }
+  addText(form,"Why EPOS not used?");
 
 
-  // -------- GROUP D ----------
+  // FOODHUB EXPERIENCE
   addSection(form, "Foodhub Experience");
 
   addRadio(form,
-    "Are you experiencing any issues or limitations with the Foodhub system?",
-    ["No issues", "Minor limitations", "Major issues"]
+    "Any Foodhub issues?",
+    ["No","Minor","Major"]
   );
 
-  addText(form, "Could you briefly describe the issue?");
+  addText(form,"Issue details");
 
 
-  // -------- CALL OUTCOME ----------
+  // CALL OUTCOME
   addSection(form, "Call Outcome");
 
   addRadio(form,
-    "Did the client accept the Pay-As-You-Go deal?",
-    [
-      "Accepted",
-      "Wants time to consider",
-      "Rejected",
-      "Not offered"
-    ]
+    "Deal status",
+    ["Accepted","Considering","Rejected","Not offered"]
   );
 
   addRadio(form,
-    "Was any upsell attempted during the call?",
-    ["Yes", "No"]
+    "Upsell attempted?",
+    ["Yes","No"]
   );
 
-
-  const upsellWrapper = document.createElement("div");
-  upsellWrapper.className = "question hidden";
-  upsellWrapper.id = "upsellDetails";
-
-  upsellWrapper.innerHTML = `
-  <p>What product or service was upsold?</p>
-  <select id="upsellSelect">
-    <option>EPOS</option>
-    <option>Foodhub App</option>
-    <option>Card Machine / PDQ</option>
-    <option>Kiosk</option>
-    <option>Website Upgrade</option>
-    <option>SMS Marketing</option>
-    <option>Loyalty</option>
-    <option>Other</option>
-  </select>
-  <textarea id="upsellOther" placeholder="If Other, specify..." style="display:none;"></textarea>
-  `;
-
-  form.appendChild(upsellWrapper);
-
-
-  document.querySelectorAll('input[name="Was any upsell attempted during the call?"]')
-  .forEach(radio => {
-    radio.addEventListener("change", e => {
-      document.getElementById("upsellDetails")
-        .classList.toggle("hidden", e.target.nextSibling.textContent.trim() !== "Yes");
-    });
-  });
-
-  document.addEventListener("change", function(e){
-    if(e.target.id === "upsellSelect"){
-      document.getElementById("upsellOther")
-        .style.display = e.target.value === "Other" ? "block" : "none";
-    }
-  });
+  addText(form,"Upsell product");
 
 
   document.getElementById("submitBtn").classList.remove("hidden");
@@ -280,13 +191,6 @@ function submitCall() {
     return;
   }
 
-  const agentName = document.querySelector('select[name="Select your name"]')?.value;
-
-  if (!agentName) {
-    alert("Please select your name before submitting.");
-    return;
-  }
-
   const selected = q =>
     document.querySelector(`input[name="${q}"]:checked`)?.parentElement.textContent.trim() || "";
 
@@ -295,49 +199,43 @@ function submitCall() {
       .map(el => el.value)
       .join(", ");
 
-  const textAreas = document.querySelectorAll("textarea");
+  const texts = document.querySelectorAll("textarea");
 
   const payload = {
 
-    agentName: agentName,
+    agent: document.querySelector('select[name="Agent"]')?.value || "",
 
     storeId: currentStore["Store ID"],
-    systemType: currentStore["System Type"],
-    subscribedTech: currentStore["Subscribed Tech"],
-    foodhubRental: currentStore["Payemnt Info [ System Rentals ] [ FoodHub ]"],
-    datmanRental: currentStore["Payemnt Info [ System Rentals ] [ Datman ]"],
-    googlePin: currentStore["Gpin Status"],
-    googleOwner: currentStore["Competitor Name"] || "Unknown",
-    posCompetitors: getPosCompetitors(currentStore).join(", "),
-    avgOnline: currentStore["Avverage Online"],
-    offlineOrders: currentStore["Offline Online"],
 
-    offlinePerDay: selected("How many offline orders do you typically handle per day?"),
-    onlinePerWeek: selected("How many online orders do you receive per week across all platforms?"),
-    marketplaces: checkboxes("Which delivery marketplaces are you currently using?"),
-    usingCompetitor: selected("Are you using another online ordering or POS provider besides Foodhub?"),
-    competitorName: selected("Which provider are you using?"),
-    competitorOrders: selected("Roughly how many orders per week come through that provider?"),
-    competitorFees: textAreas[0]?.value || "",
-    competitorDeal: textAreas[1]?.value || "",
-    offlineMethod: selected("How are walk-in and phone orders currently processed?"),
-    eposWhyNotUsed: selected("We can see Foodhub EPOS is installed — could you share why it isn’t being used for offline orders?"),
-    foodhubIssues: selected("Are you experiencing any issues or limitations with the Foodhub system?"),
-    issueDetails: textAreas[textAreas.length-1]?.value || "",
+    offlinePerDay: selected("Offline orders per day"),
+    onlinePerWeek: selected("Online orders per week"),
 
-    dealStatus: selected("Did the client accept the Pay-As-You-Go deal?"),
-    upsellAttempted: selected("Was any upsell attempted during the call?"),
-    upsellProduct: document.getElementById("upsellSelect")?.value || "",
-    upsellOther: document.getElementById("upsellOther")?.value || ""
+    platforms: checkboxes("Delivery platforms"),
+    usingPos: selected("Using another POS?"),
+
+    competitorName: texts[0]?.value || "",
+    competitorOrders: texts[1]?.value || "",
+    competitorFees: texts[2]?.value || "",
+    competitorDeal: texts[3]?.value || "",
+
+    offlineMethod: selected("Offline order method"),
+    eposWhyNotUsed: texts[4]?.value || "",
+
+    issues: selected("Any Foodhub issues?"),
+    issueDetails: texts[5]?.value || "",
+
+    dealStatus: selected("Deal status"),
+    upsellAttempted: selected("Upsell attempted?"),
+    upsellProduct: texts[6]?.value || ""
   };
 
 
-  fetch("https://script.google.com/macros/s/AKfycbyKRf7hE25n4Ha9bE3c1FEVDzyAnh24o5Z97tskuF-yf8n_MnffItj6zuhy2DNCrG_t/exec", {
+  fetch("PASTE_YOUR_SCRIPT_URL", {
     method: "POST",
     body: JSON.stringify(payload)
   });
 
-  alert("Call saved successfully ✅");
+  alert("Saved ✅");
 }
 
 
@@ -345,55 +243,43 @@ function submitCall() {
 // ================================
 // UI HELPERS
 // ================================
-function addSection(form, title) {
-  const h = document.createElement("div");
-  h.className = "section-title";
-  h.innerText = title;
+function addSection(form,title){
+  const h=document.createElement("div");
+  h.className="section-title";
+  h.innerText=title;
   form.appendChild(h);
 }
 
-function addRadio(form, question, options) {
-  const d = document.createElement("div");
-  d.className = "question";
-
-  d.innerHTML = `<p>${question}</p>` +
-    options.map(o =>
-      `<label><input type="radio" name="${question}"> ${o}</label><br>`
-    ).join("");
-
+function addRadio(form,q,opts){
+  const d=document.createElement("div");
+  d.className="question";
+  d.innerHTML=`<p>${q}</p>`+
+    opts.map(o=>`<label><input type="radio" name="${q}"> ${o}</label><br>`).join("");
   form.appendChild(d);
 }
 
-function addCheckbox(form, question, options) {
-  const d = document.createElement("div");
-  d.className = "question";
-
-  d.innerHTML = `<p>${question}</p>` +
-    options.map(o =>
-      `<label><input type="checkbox" name="${question}" value="${o}"> ${o}</label><br>`
-    ).join("");
-
+function addCheckbox(form,q,opts){
+  const d=document.createElement("div");
+  d.className="question";
+  d.innerHTML=`<p>${q}</p>`+
+    opts.map(o=>`<label><input type="checkbox" name="${q}" value="${o}"> ${o}</label><br>`).join("");
   form.appendChild(d);
 }
 
-function addDropdown(form, question, options) {
-  const d = document.createElement("div");
-  d.className = "question";
-
-  d.innerHTML = `
-    <p>${question}</p>
-    <select name="${question}">
-      <option value="">-- Select --</option>
-      ${options.map(o => `<option>${o}</option>`).join("")}
-    </select>
-  `;
-
+function addDropdown(form,q,opts){
+  const d=document.createElement("div");
+  d.className="question";
+  d.innerHTML=`<p>${q}</p>
+  <select name="${q}">
+  <option value="">--Select--</option>
+  ${opts.map(o=>`<option>${o}</option>`).join("")}
+  </select>`;
   form.appendChild(d);
 }
 
-function addText(form, question) {
-  const d = document.createElement("div");
-  d.className = "question";
-  d.innerHTML = `<p>${question}</p><textarea></textarea>`;
+function addText(form,q){
+  const d=document.createElement("div");
+  d.className="question";
+  d.innerHTML=`<p>${q}</p><textarea></textarea>`;
   form.appendChild(d);
 }
