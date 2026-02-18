@@ -14,6 +14,7 @@ Papa.parse("data/stores.csv", {
   skipEmptyLines: true,
   complete: function(results) {
     stores = results.data;
+    console.log("Stores loaded:", stores.length);
   }
 });
 
@@ -42,7 +43,7 @@ function loadStore() {
   currentStore = store;
 
   renderSnapshot(store);
-  renderQuestions(store);
+  renderQuestions();
 }
 
 
@@ -55,27 +56,25 @@ function renderSnapshot(store) {
   const snap = document.getElementById("snapshot");
   snap.classList.remove("hidden");
 
-  const posCompetitors = getPosCompetitors(store);
-  const competitorsText =
-    posCompetitors.length > 0 ? posCompetitors.join(" / ") : "None";
-
   snap.innerHTML = `
     <div class="section-title">Store Snapshot</div>
 
     <div class="snapshot-grid">
+
       <div>
-        <p><b>System:</b> ${store["System Type"]}</p>
-        <p><b>Subscribed Tech:</b> ${store["Subscribed Tech"]}</p>
-        <p><b>Foodhub Weekly Rental:</b> £${store["Payemnt Info [ System Rentals ] [ FoodHub ]"]}</p>
-        <p><b>Datman Weekly Rental:</b> £${store["Payemnt Info [ System Rentals ] [ Datman ]"]}</p>
+        <p><b>System:</b> ${store["System Type"] || ""}</p>
+        <p><b>Subscribed Tech:</b> ${store["Subscribed Tech"] || ""}</p>
+        <p><b>Foodhub Rental:</b> £${store["Payemnt Info [ System Rentals ] [ FoodHub ]"] || ""}</p>
+        <p><b>Datman Rental:</b> £${store["Payemnt Info [ System Rentals ] [ Datman ]"] || ""}</p>
       </div>
 
       <div>
-        <p><b>Google Pin:</b> ${store["Gpin Status"]}</p>
-        <p><b>POS Competitors:</b> ${competitorsText}</p>
-        <p><b>Avg Online:</b> ${store["Avverage Online"]}</p>
-        <p><b>Offline Orders:</b> ${store["Offline Online"]}</p>
+        <p><b>Google Pin:</b> ${store["Gpin Status"] || ""}</p>
+        <p><b>Google Owner:</b> ${store["Competitor Name"] || ""}</p>
+        <p><b>Avg Online:</b> ${store["Avverage Online"] || ""}</p>
+        <p><b>Offline Orders:</b> ${store["Offline Online"] || ""}</p>
       </div>
+
     </div>
   `;
 }
@@ -83,49 +82,44 @@ function renderSnapshot(store) {
 
 
 // ================================
-// QUESTIONS (NO CONDITIONS)
+// QUESTIONS (ALL VISIBLE)
 // ================================
-function renderQuestions(store) {
+function renderQuestions() {
 
   const form = document.getElementById("callForm");
   form.classList.remove("hidden");
   form.innerHTML = "";
 
+
   // CALL OWNER
   addSection(form, "Call Owner");
 
-  addDropdown(form,
-    "Agent",
-    ["Kareem","Mansour","Ibrahim","Hossam"]
-  );
+  addDropdown(form, "Agent", [
+    "Kareem",
+    "Mansour",
+    "Ibrahim",
+    "Hossam"
+  ]);
 
 
   // BUSINESS
   addSection(form, "Business Volume");
 
-  addRadio(form,
-    "Offline orders per day",
-    ["0–20","21–50","50+"]
-  );
-
-  addRadio(form,
-    "Online orders per week",
-    ["0–10","11–30","30+"]
-  );
+  addRadio(form, "Offline orders per day", ["0–20","21–50","50+"]);
+  addRadio(form, "Online orders per week", ["0–10","11–30","30+"]);
 
 
-  // MARKETPLACES
+  // ONLINE
   addSection(form, "Online Sources");
 
-  addCheckbox(form,
-    "Delivery platforms",
-    ["Just Eat","Uber Eats","Deliveroo","None"]
-  );
+  addCheckbox(form, "Delivery platforms", [
+    "Just Eat",
+    "Uber Eats",
+    "Deliveroo",
+    "None"
+  ]);
 
-  addRadio(form,
-    "Using another POS?",
-    ["Yes","No"]
-  );
+  addRadio(form, "Using another POS?", ["Yes","No"]);
 
   addText(form,"Competitor name");
   addText(form,"Competitor weekly orders");
@@ -133,45 +127,45 @@ function renderQuestions(store) {
   addText(form,"Special deal");
 
 
-  // OFFLINE OPS
+  // OFFLINE
   addSection(form, "Offline Operations");
 
-  addRadio(form,
-    "Offline order method",
-    [
-      "Foodhub EPOS only",
-      "Foodhub + other POS",
-      "Other POS only",
-      "Pen & paper"
-    ]
-  );
+  addRadio(form,"Offline order method",[
+    "Foodhub EPOS only",
+    "Foodhub + other POS",
+    "Other POS only",
+    "Pen & paper"
+  ]);
 
   addText(form,"Why EPOS not used?");
 
 
-  // FOODHUB EXPERIENCE
+  // EXPERIENCE
   addSection(form, "Foodhub Experience");
 
-  addRadio(form,
-    "Any Foodhub issues?",
-    ["No","Minor","Major"]
-  );
+  addRadio(form,"Any Foodhub issues?",[
+    "No",
+    "Minor",
+    "Major"
+  ]);
 
   addText(form,"Issue details");
 
 
-  // CALL OUTCOME
+  // OUTCOME
   addSection(form, "Call Outcome");
 
-  addRadio(form,
-    "Deal status",
-    ["Accepted","Considering","Rejected","Not offered"]
-  );
+  addRadio(form,"Deal status",[
+    "Accepted",
+    "Considering",
+    "Rejected",
+    "Not offered"
+  ]);
 
-  addRadio(form,
-    "Upsell attempted?",
-    ["Yes","No"]
-  );
+  addRadio(form,"Upsell attempted?",[
+    "Yes",
+    "No"
+  ]);
 
   addText(form,"Upsell product");
 
@@ -201,15 +195,24 @@ function submitCall() {
 
   const texts = document.querySelectorAll("textarea");
 
+
   const payload = {
 
+    // SNAPSHOT DATA
     agent: document.querySelector('select[name="Agent"]')?.value || "",
+    storeId: currentStore["Store ID"] || "",
+    systemType: currentStore["System Type"] || "",
+    subscribedTech: currentStore["Subscribed Tech"] || "",
+    foodhubRental: currentStore["Payemnt Info [ System Rentals ] [ FoodHub ]"] || "",
+    datmanRental: currentStore["Payemnt Info [ System Rentals ] [ Datman ]"] || "",
+    googlePin: currentStore["Gpin Status"] || "",
+    googleOwner: currentStore["Competitor Name"] || "",
+    avgOnline: currentStore["Avverage Online"] || "",
+    offlineOrders: currentStore["Offline Online"] || "",
 
-    storeId: currentStore["Store ID"],
-
+    // CALL DATA
     offlinePerDay: selected("Offline orders per day"),
     onlinePerWeek: selected("Online orders per week"),
-
     platforms: checkboxes("Delivery platforms"),
     usingPos: selected("Using another POS?"),
 
@@ -230,7 +233,7 @@ function submitCall() {
   };
 
 
-  fetch("https://script.google.com/macros/s/AKfycbwm6O0NEfH7UhLfWtBSrMq9KX1p7_U1N643AWiLouuMzNS6ih2tNAPYEH_VYLuAPCxA/exec", {
+  fetch("PASTE_YOUR_REAL_SCRIPT_URL_HERE", {
     method: "POST",
     body: JSON.stringify(payload)
   });
